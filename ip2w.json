@@ -2,5 +2,5 @@
   "ipinfo_token": "",
   "owm_appid": "",
   "debug": true,
-  "log": null
+  "log": "/var/log/ip2w/log.log"
 }

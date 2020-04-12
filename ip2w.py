@@ -98,7 +98,14 @@ def get_weather(ip, ipinfo_url, ipinfo_token, owm_url, owm_appid):
         "conditions": conditions
     }
 
-config = load_config()
+
+cfg_path = os.environ.get('IP2W_CONFIG')
+if not cfg_path:
+    config = load_config()
+else:
+    config = load_config(cfg_path)
+
+
 ipinfo_token = config["ipinfo_token"]
 ipinfo_url = config["ipinfo_url"]
 owm_url = config["owm_url"]
@@ -110,9 +117,11 @@ logging.basicConfig(filename=config["log"],
                     datefmt=config["log_datefmt"]
 )
 
+logging.info("IP2W started")
+logging.debug(f"config from {cfg_path}")
+logging.debug(f"congig={config}")
 
-logging.debug(config)
 
 if __name__ == "__main__":
-    httpd = make_server('localhost', 8042, application)
+    httpd = make_server('localhost', 80, application)
     httpd.serve_forever()
