@@ -1,6 +1,6 @@
 {
-  "ipinfo_token": "",
-  "owm_appid": "",
+  "ipinfo_token": "2b0a56e575c102",
+  "owm_appid": "e602426386ab8c6f5a2d8610c693d6bd",
   "debug": true,
   "log": "/var/log/ip2w/log.log"
 }

@@ -2,8 +2,8 @@
 Description=uWSGI instance to serve ip2w
 
 [Service]
-ExecStartPre=-/usr/bin/bash -c 'mkdir -p /run/uwsgi; chown user:nginx /run/uwsgi'
-ExecStart=/usr/bin/bash -c 'cd /home/user/PycharmProjects/iptw; source venv/bin/activate; uwsgi --ini ip2w.ini'
+ExecStartPre=-/usr/bin/bash -c 'pip3 install virtualenv; cd /usr/local/ip2wTEST/ virtualenv venv; source venv/bin/activate; pip3 install requests; pip3 install uwsgi; deactivate; mkdir -p /run/uwsgi; chown :nginx /run/uwsgi'
+ExecStart=/usr/bin/bash -c 'cd /usr/local/ip2wTEST/; source venv/bin/activate; uwsgi --ini /usr/local/etc/ip2w.ini'
 
 [Install]
 WantedBy=multi-user.target
