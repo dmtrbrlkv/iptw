@@ -14,7 +14,8 @@ Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
 BuildRequires: systemd
-Requires:       python3, python3-devel, gcc, epel-release, nginx
+Requires:       epel-release
+Requires:       python3, python3-devel, gcc, nginx
 Summary:  IP to weather daemon
 
 
