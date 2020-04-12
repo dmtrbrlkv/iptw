@@ -1,0 +1,9 @@
+[Unit]
+Description=uWSGI instance to serve ip2w
+
+[Service]
+ExecStartPre=-/usr/bin/bash -c 'mkdir -p /run/uwsgi; chown user:nginx /run/uwsgi'
+ExecStart=/usr/bin/bash -c 'cd /home/user/PycharmProjects/iptw; source venv/bin/activate; uwsgi --ini ip2w.ini'
+
+[Install]
+WantedBy=multi-user.target
