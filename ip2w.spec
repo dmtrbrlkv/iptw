@@ -45,6 +45,7 @@ cp otus-%{current_datetime}/ip2w.ini %{buildroot}/%{__etcdir}
 
 %{__install} -pD -m 644 otus-%{current_datetime}/uwsgi.service %{buildroot}/%{__systemddir}/%{name}.service
 
+
 %post
 %systemd_post %{name}.service
 systemctl daemon-reload
