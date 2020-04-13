@@ -28,7 +28,6 @@ Git version: %{git_version} (branch: %{git_branch})
 %define __bindir    /usr/local/ip2w/
 %define __systemddir	/usr/lib/systemd/system/
 
-
 %prep
 %setup -c
 
@@ -39,9 +38,9 @@ Git version: %{git_version} (branch: %{git_branch})
 %{__mkdir} -p %{buildroot}/%{__etcdir}
 %{__mkdir} -p %{buildroot}/%{__logdir}
 
-cp otus-%{current_datetime}/ip2w.py %{buildroot}/%{__bindir}
-cp otus-%{current_datetime}/ip2w.json %{buildroot}/%{__etcdir}
-cp otus-%{current_datetime}/ip2w.ini %{buildroot}/%{__etcdir}
+%{__install} -pD -m 755 otus-%{current_datetime}/ip2w.py %{buildroot}/%{__bindir}
+%{__install} -pD -m 644 otus-%{current_datetime}/ip2w.json %{buildroot}/%{__etcdir}
+%{__install} -pD -m 644 otus-%{current_datetime}/ip2w.ini %{buildroot}/%{__etcdir}
 
 %{__install} -pD -m 644 otus-%{current_datetime}/uwsgi.service %{buildroot}/%{__systemddir}/%{name}.service
 
