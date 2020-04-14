@@ -13,9 +13,8 @@ BuildArch:      noarch
 Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
-BuildRequires: systemd
-Requires:       epel-release
-Requires:       python3
+BuildRequires:  systemd
+Requires:       epel-release, python3, python3-requests
 Summary:  IP to weather daemon
 
 
