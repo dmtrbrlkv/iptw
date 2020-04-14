@@ -11,7 +11,7 @@ def application(environ, start_response):
     ip = environ["PATH_INFO"].split("/")[-1]
     logging.debug(f"IP = {ip}, environ = {environ}")
     try:
-        data = get_weather(ip, ipinfo_url, ipinfo_token, owm_url, owm_appid)
+        data = get_weather(ip, ipinfo_url, ipinfo_token, owm_url, owm_appid, timeout, session)
         logging.debug(data)
         start_response("200 OK", [("Content-Type", "application/json; charset=utf-8")])
         data = json.dumps(data, ensure_ascii=False)
@@ -32,7 +32,9 @@ def load_config(cfg_path="ip2w.json"):
         "owm_url": "http://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={appid}&lang=ru&units=metric",
         "log": None,
         "log_format": "[%(asctime)s] %(levelname).1s %(message)s",
-        "log_datefmt":"%Y.%m.%d %H:%M:%S"
+        "log_datefmt":"%Y.%m.%d %H:%M:%S",
+        "timeout": 1,
+        "retry": 5,
     }
 
     if not os.path.exists(cfg_path):
@@ -47,9 +49,13 @@ def load_config(cfg_path="ip2w.json"):
     return config
 
 
-def get_weather_by_geo(lat, lon, owm_url, owm_appid):
+def get_weather_by_geo(lat, lon, owm_url, owm_appid, timeout, session):
     url = owm_url.format(lat=lat, lon=lon, appid=owm_appid)
-    response = requests.get(url)
+
+    response = get_response(url, timeout, session)
+
+    if response is None:
+        raise requests.HTTPError(f"Can't get response")
     if response.status_code != HTTPStatus.OK:
         raise requests.HTTPError(f"Response status = {response.status_code}")
     if "application/json" not in response.headers["content-type"]:
@@ -68,11 +74,33 @@ def get_weather_by_geo(lat, lon, owm_url, owm_appid):
     return temp, conditions
 
 
-def get_geo(ip, ipinfo_url, ipinfo_token):
+def create_session(n_retry):
+    s = requests.Session()
+    a = requests.adapters.HTTPAdapter(max_retries=n_retry)
+    s.mount('http://', a)
+    s.mount('https://', a)
+    return s
+
+
+def get_response(url, timeout, session):
+    response = None
+    try:
+        response = session.get(url, timeout=timeout)
+    except:
+        logging.exception(f"Error: ")
+    return response
+
+
+def get_geo(ip, ipinfo_url, ipinfo_token, timeout, session):
     if ip == "":
         raise ValueError("Empty ip")
     url = ipinfo_url.format(ip=ip, token=ipinfo_token)
-    response = requests.get(url)
+
+    response = get_response(url,  timeout, session)
+
+    if response is None:
+        raise requests.HTTPError(f"Can't get response")
+
     if response.status_code != HTTPStatus.OK:
         raise requests.HTTPError(f"IP = {ip}, response status = {response.status_code}")
     if "application/json" not in response.headers["content-type"]:
@@ -89,9 +117,9 @@ def get_geo(ip, ipinfo_url, ipinfo_token):
     return lat, lon, city
 
 
-def get_weather(ip, ipinfo_url, ipinfo_token, owm_url, owm_appid):
-    lat, lon, city = get_geo(ip, ipinfo_url, ipinfo_token)
-    temp, conditions = get_weather_by_geo(lat, lon, owm_url, owm_appid)
+def get_weather(ip, ipinfo_url, ipinfo_token, owm_url, owm_appid, timeout, session):
+    lat, lon, city = get_geo(ip, ipinfo_url, ipinfo_token, timeout, session)
+    temp, conditions = get_weather_by_geo(lat, lon, owm_url, owm_appid, timeout, session)
     return {
         "city": city,
         "temp": str(int(temp)) if temp <= 0 else "+" + str(int(temp)),
@@ -105,11 +133,13 @@ if not cfg_path:
 else:
     config = load_config(cfg_path)
 
-
 ipinfo_token = config["ipinfo_token"]
 ipinfo_url = config["ipinfo_url"]
 owm_url = config["owm_url"]
 owm_appid = config["owm_appid"]
+timeout = config["timeout"]
+n_retry = config["retry"]
+session = create_session(n_retry)
 
 logging.basicConfig(filename=config["log"],
                     level=logging.INFO if "debug" not in config or not config["debug"] else logging.DEBUG,
@@ -123,5 +153,5 @@ logging.debug(f"congig={config}")
 
 
 if __name__ == "__main__":
-    httpd = make_server('localhost', 80, application)
+    httpd = make_server('localhost', 8080, application)
     httpd.serve_forever()
